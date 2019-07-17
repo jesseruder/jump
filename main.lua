@@ -3,11 +3,11 @@ local RENDER_SCALE = 3
 
 -- Game constants
 local LEVEL_DATA = {{type = 'block', x = 0, y = 2, width = 1, height = 1}}
-for i=0,20 do
+for i=0,200 do
   table.insert(LEVEL_DATA, {type = 'block', x = i, y = 8, width = 1, height = 1})
 end
 
-table.insert(LEVEL_DATA, {type = 'block', x = 11, y = 3, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 11, y = 4, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 12, y = 3, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 13, y = 3, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 14, y = 3, width = 1, height = 1})
@@ -65,6 +65,7 @@ function resetGame()
     isGrounded = false,
     isHoldingA = false,
     startJumpVx = 0,
+    screenScroll = 0,
   }
 
   for _, obj in ipairs(LEVEL_DATA) do
@@ -97,6 +98,10 @@ function love.load()
   resetGame()
 end
 
+function isJumpKey(key)
+  return key == 'space' or key == 'up'
+end
+
 function love.keypressed(key, scancode, isrepeat)
   local moveX = (key == 'left' and -1 or 0) + (key == 'right' and 1 or 0)
 
@@ -104,7 +109,7 @@ function love.keypressed(key, scancode, isrepeat)
     player.vx = moveX * MINIMUM_WALK_VELOCITY
   end
 
-  if key == 'space' and player.isGrounded then
+  if isJumpKey(key) and player.isGrounded then
     player.isHoldingA = true
     player.startJumpVx = player.vx
 
@@ -132,7 +137,7 @@ function love.update(dt)
     player.runUntilTime = player.elapsedTime + 10 / ORIGINAL_FPS
   end
 
-  if not love.keyboard.isDown('space') then
+  if not love.keyboard.isDown('space') and not love.keyboard.isDown('up') then
     player.isHoldingA = false
   end
 
@@ -226,7 +231,7 @@ function love.update(dt)
     end
 
 
-    local maxJumpVx = player.startJumpVx < 0x01900 and 0x01900 or 0x02900
+    local maxJumpVx = math.abs(player.startJumpVx) <= 0x01900 and 0x01900 or 0x02900
     if player.vx > maxJumpVx then
       player.vx = maxJumpVx
     elseif player.vx < -maxJumpVx then
@@ -278,8 +283,8 @@ function love.update(dt)
   end
 
   -- Keep the player in bounds
-  if player.x < 0 then
-    player.x = 0
+  if player.x < player.screenScroll then
+    player.x = player.screenScroll
   end
   --[[elseif player.x > GAME_WIDTH - player.width then
     player.x = GAME_WIDTH - player.width
@@ -293,12 +298,21 @@ end
 function love.draw()
   -- Scale and crop the screen
   --love.graphics.setScissor(0, 0, RENDER_SCALE * GAME_WIDTH, RENDER_SCALE * GAME_HEIGHT)
+
   love.graphics.scale(RENDER_SCALE, RENDER_SCALE)
   love.graphics.clear(251 / 255, 134 / 255, 199 / 255)
   love.graphics.setColor(1, 1, 1, 1)
 
   local screenWidth = love.graphics.getWidth()
   local screenHeight = love.graphics.getHeight()
+
+  if player.x > player.screenScroll + (screenWidth / (RENDER_SCALE * 2.0) - BLOCK_SIZE / 2.0) then
+    player.screenScroll = player.x - (screenWidth / (RENDER_SCALE * 2.0) - BLOCK_SIZE / 2.0)
+  end
+
+  love.graphics.translate(-player.screenScroll, 0)
+
+
 
   --[[
   for x=0, screenWidth, BLOCK_SIZE do
