@@ -7,25 +7,32 @@ for i=1,20 do
   table.insert(LEVEL_DATA, {type = 'block', x = i, y = 8, width = 1, height = 1})
 end
 
+table.insert(LEVEL_DATA, {type = 'block', x = 8, y = 5, width = 1, height = 1})
+
 local BLOCK_SIZE = 16
+local ORIGINAL_FPS = 60
 
 function TO_WORLD_UNITS(x)
-  -- 60 fps
   -- https://web.archive.org/web/20130807122227/http://i276.photobucket.com/albums/kk21/jdaster64/smb_playerphysics.png
-  return (x / 0xFFFFF) * BLOCK_SIZE * 60
+  return (x / 0x10000) * BLOCK_SIZE * ORIGINAL_FPS
 end
 
+function TO_WORLD_ACC_UNITS(x)
+  -- https://web.archive.org/web/20130807122227/http://i276.photobucket.com/albums/kk21/jdaster64/smb_playerphysics.png
+  return (x / 0x10000) * BLOCK_SIZE * ORIGINAL_FPS * ORIGINAL_FPS
+end
+
+-- horizontal movement
 local MINIMUM_WALK_VELOCITY = TO_WORLD_UNITS(0x00130)
 local MAXIMUM_WALK_VECLOCITY = TO_WORLD_UNITS(0x01900)
-local WALK_ACCELERATION = TO_WORLD_UNITS(0x00098)
+local WALK_ACCELERATION = TO_WORLD_ACC_UNITS(0x00098)
 local MAXIMUM_WALK_VELOCITY_UNDERWATER = TO_WORLD_UNITS(0x1100)
-local RUN_ACCELERATION = TO_WORLD_UNITS(0x000E4)
+local RUN_ACCELERATION = TO_WORLD_ACC_UNITS(0x000E4)
 local MAXIMUM_WALK_VELOCITY_LEVEL_ENTRY = TO_WORLD_UNITS(0x00D00)
-local RELEASE_DECELERATION = TO_WORLD_UNITS(0x000D0)
+local RELEASE_DECELERATION = TO_WORLD_ACC_UNITS(0x000D0)
 local MAXIMUM_RUN_VELOCITY = TO_WORLD_UNITS(0x02900)
-local SKID_DECELERATION = TO_WORLD_UNITS(0x001A0)
+local SKID_DECELERATION = TO_WORLD_ACC_UNITS(0x001A0)
 local SKID_TURNAROUND_SPEED = TO_WORLD_UNITS(0x00900)
-
 
 -- Game variables
 local player
@@ -51,8 +58,15 @@ function resetGame()
     y = 1,
     vx = 0,
     vy = 0,
+    holdingAGravity = 0,
+    fallingGravity = TO_WORLD_ACC_UNITS(0x00700),
+    elapsedTime = 0,
+    runUntilTime = 0,
     width = BLOCK_SIZE,
     height = BLOCK_SIZE,
+    isGrounded = false,
+    isHoldingA = false,
+    startJumpVx = 0,
   }
 
   for _, obj in ipairs(LEVEL_DATA) do
@@ -91,12 +105,143 @@ function love.keypressed(key, scancode, isrepeat)
   if player.vx == 0 then
     player.vx = moveX * MINIMUM_WALK_VELOCITY
   end
+
+  if key == 'space' and player.isGrounded then
+    player.isHoldingA = true
+    player.startJumpVx = player.vx
+
+    if math.abs(player.vx) < TO_WORLD_UNITS(0x04000) then
+      player.vy = -TO_WORLD_UNITS(0x4000)
+      player.holdingAGravity = TO_WORLD_ACC_UNITS(0x00200)
+      player.fallingGravity = TO_WORLD_ACC_UNITS(0x00700)
+    elseif math.abs(player.vx) < TO_WORLD_UNITS(0x024FF) then
+      player.vy = -TO_WORLD_UNITS(0x4000)
+      player.holdingAGravity = TO_WORLD_ACC_UNITS(0x001E0)
+      player.fallingGravity = TO_WORLD_ACC_UNITS(0x00600)
+    else
+      player.vy = -TO_WORLD_UNITS(0x5000)
+      player.holdingAGravity = TO_WORLD_ACC_UNITS(0x00280)
+      player.fallingGravity = TO_WORLD_ACC_UNITS(0x00900)
+    end
+  end
 end
 
 -- Updates the game state
 function love.update(dt)
+  player.elapsedTime = player.elapsedTime + dt
+
+  if love.keyboard.isDown('lshift') or love.keyboard.isDown('rshift') then
+    player.runUntilTime = player.elapsedTime + 10 / ORIGINAL_FPS
+  end
+
+  if not love.keyboard.isDown('space') then
+    player.isHoldingA = false
+  end
+
+  local maxVelocity = MAXIMUM_WALK_VECLOCITY
+  local acceleration = WALK_ACCELERATION
+  local gravity = player.isHoldingA and player.holdingAGravity or player.fallingGravity
+  if player.vy > 0 then
+    gravity = player.fallingGravity
+  end
+
+  if player.elapsedTime < player.runUntilTime then
+    maxVelocity = MAXIMUM_RUN_VELOCITY
+    acceleration = RUN_ACCELERATION
+  end
+
+  local moveX = (love.keyboard.isDown('left') and -1 or 0) + (love.keyboard.isDown('right') and 1 or 0)
+  
+  if player.isGrounded then
+    if moveX > 0 and player.vx > 0 then
+      if player.vx > maxVelocity then
+        -- player was running and then released
+        player.vx = player.vx - RELEASE_DECELERATION * dt
+      else
+        player.vx = player.vx + acceleration * dt
+        if player.vx > maxVelocity then
+          player.vx = maxVelocity
+        end
+      end
+    elseif moveX < 0 and player.vx < 0 then
+      if player.vx < -maxVelocity then
+        -- player was running and then released
+        player.vx = player.vx + RELEASE_DECELERATION * dt
+      else
+        player.vx = player.vx - acceleration * dt
+        if player.vx < -maxVelocity then
+          player.vx = -maxVelocity
+        end
+      end
+    end
+
+    if moveX == 0 and player.vx > 0 then
+      player.vx = player.vx - RELEASE_DECELERATION * dt
+      if player.vx < 0 then
+        player.vx = 0
+      end
+    elseif moveX == 0 and player.vx < 0 then
+      player.vx = player.vx + RELEASE_DECELERATION * dt
+      if player.vx > 0 then
+        player.vx = 0
+      end
+    end
+
+    if moveX > 0 and player.vx <= 0 then
+      if player.vx > -SKID_TURNAROUND_SPEED then
+        player.vx = MINIMUM_WALK_VELOCITY
+      else
+        player.vx = player.vx + SKID_DECELERATION * dt
+      end
+    elseif moveX < 0 and player.vx >= 0 then
+      if player.vx < SKID_TURNAROUND_SPEED then
+        player.vx = -MINIMUM_WALK_VELOCITY
+      else
+        player.vx = player.vx - SKID_DECELERATION * dt
+      end
+    end
+  else
+    -- midair physics
+
+    if moveX > 0 and player.vx > 0 then
+      if player.vx < TO_WORLD_UNITS(0x01900) then
+        player.vx = player.vx + TO_WORLD_ACC_UNITS(0x00098) * dt
+      else
+        player.vx = player.vx + TO_WORLD_ACC_UNITS(0x000E4) * dt
+      end
+    end
+
+    if moveX < 0 and player.vx < 0 then
+      if player.vx > -TO_WORLD_UNITS(0x01900) then
+        player.vx = player.vx - TO_WORLD_ACC_UNITS(0x00098) * dt
+      else
+        player.vx = player.vx - TO_WORLD_ACC_UNITS(0x000E4) * dt
+      end
+    end
+
+    if moveX > 0 and player.vx <= 0 then
+      if player.vx < -TO_WORLD_UNITS(0x01900) then
+        player.vx = player.vx + TO_WORLD_ACC_UNITS(0x000E4) * dt
+      else
+
+      end
+    end
+
+
+    local maxJumpVx = player.startJumpVx < TO_WORLD_UNITS(0x01900) and TO_WORLD_UNITS(0x01900) or TO_WORLD_UNITS(0x02900)
+    if player.vx > maxJumpVx then
+      player.vx = maxJumpVx
+    elseif player.vx < -maxJumpVx then
+      player.vx = -maxJumpVx
+    end
+  end
+
   -- Accelerate downward (a la gravity)
-  player.vy = player.vy + 480 * dt
+  player.vy = player.vy + gravity * dt
+
+  if player.vy < -TO_WORLD_UNITS(0x04000) then
+    player.vy = -TO_WORLD_UNITS(0x04000)
+  end
 
   -- Apply the player's velocity to her position
   player.x = player.x + player.vx * dt
