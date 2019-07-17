@@ -4,57 +4,57 @@ local RENDER_SCALE = 2.0
 -- Game constants
 local LEVEL_DATA = {}
 for i=0,64 do
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 15, width = 1, height = 1})
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 16, width = 1, height = 1})
+  table.insert(LEVEL_DATA, {type = 'block', x = i, y = -1, width = 1, height = 1})
+  table.insert(LEVEL_DATA, {type = 'block', x = i, y = -0, width = 1, height = 1})
 end
 
-table.insert(LEVEL_DATA, {type = 'block', x = 16, y = 11, width = 1, height = 1}) -- question
+table.insert(LEVEL_DATA, {type = 'block', x = 16, y = 4, width = 1, height = 1}) -- question
 
-table.insert(LEVEL_DATA, {type = 'block', x = 20, y = 11, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 21, y = 11, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 11, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 23, y = 11, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 24, y = 11, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 20, y = 4, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 21, y = 4, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 4, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 23, y = 4, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 24, y = 4, width = 1, height = 1})
 
-table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 7, width = 1, height = 1}) -- question
-
--- pipe
-table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 14, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 13, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 14, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 13, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 8, width = 1, height = 1}) -- question
 
 -- pipe
-table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 14, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 13, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 12, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 14, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 13, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 12, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 1, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 2, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 1, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 2, width = 1, height = 1})
 
 -- pipe
-table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 14, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 13, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 12, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 11, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 14, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 13, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 12, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 11, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 1, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 2, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 3, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 1, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 2, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 3, width = 1, height = 1})
 
 -- pipe
-table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 14, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 13, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 12, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 11, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 14, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 13, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 12, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 11, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 1, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 2, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 3, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 4, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 1, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 2, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 3, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 4, width = 1, height = 1})
+
+-- pipe
+table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 1, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 2, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 3, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 4, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 1, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 2, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 3, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 4, width = 1, height = 1})
 
 for i=67,200 do
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 15, width = 1, height = 1})
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 16, width = 1, height = 1})
+  table.insert(LEVEL_DATA, {type = 'block', x = i, y = -1, width = 1, height = 1})
+  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 0, width = 1, height = 1})
 end
 
 local BLOCK_SIZE = 16
@@ -118,7 +118,7 @@ function resetGame()
     if obj.type == 'block' then
       table.insert(platforms, {
         x = obj.x * BLOCK_SIZE,
-        y = obj.y * BLOCK_SIZE,
+        y = (16 - obj.y) * BLOCK_SIZE,
         width = obj.width * BLOCK_SIZE,
         height = obj.height * BLOCK_SIZE
       })
@@ -366,6 +366,10 @@ function love.draw()
 
   if player.y > player.screenScrollY + (0.7 * screenHeight / RENDER_SCALE) then
     player.screenScrollY = player.y - (0.7 * screenHeight / RENDER_SCALE)
+  end
+
+  if player.y < player.screenScrollY + (0.2 * screenHeight / RENDER_SCALE) then
+    player.screenScrollY = player.y - (0.2 * screenHeight / RENDER_SCALE)
   end
 
   love.graphics.translate(-player.screenScrollX, -player.screenScrollY)
