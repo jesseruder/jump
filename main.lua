@@ -1,16 +1,61 @@
 -- Render constants
-local RENDER_SCALE = 3
+local RENDER_SCALE = 2.0
 
 -- Game constants
-local LEVEL_DATA = {{type = 'block', x = 0, y = 2, width = 1, height = 1}}
-for i=0,200 do
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 8, width = 1, height = 1})
+local LEVEL_DATA = {}
+for i=0,64 do
+  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 15, width = 1, height = 1})
+  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 16, width = 1, height = 1})
 end
 
-table.insert(LEVEL_DATA, {type = 'block', x = 11, y = 4, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 12, y = 3, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 13, y = 3, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 14, y = 3, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 16, y = 11, width = 1, height = 1}) -- question
+
+table.insert(LEVEL_DATA, {type = 'block', x = 20, y = 11, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 21, y = 11, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 11, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 23, y = 11, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 24, y = 11, width = 1, height = 1})
+
+table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 7, width = 1, height = 1}) -- question
+
+-- pipe
+table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 14, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 13, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 14, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 13, width = 1, height = 1})
+
+-- pipe
+table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 14, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 13, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 12, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 14, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 13, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 12, width = 1, height = 1})
+
+-- pipe
+table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 14, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 13, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 12, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 11, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 14, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 13, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 12, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 11, width = 1, height = 1})
+
+-- pipe
+table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 14, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 13, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 12, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 11, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 14, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 13, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 12, width = 1, height = 1})
+table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 11, width = 1, height = 1})
+
+for i=67,200 do
+  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 15, width = 1, height = 1})
+  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 16, width = 1, height = 1})
+end
 
 local BLOCK_SIZE = 16
 local ORIGINAL_FPS = 60
@@ -65,7 +110,8 @@ function resetGame()
     isGrounded = false,
     isHoldingA = false,
     startJumpVx = 0,
-    screenScroll = 0,
+    screenScrollX = 0,
+    screenScrollY = 0,
   }
 
   for _, obj in ipairs(LEVEL_DATA) do
@@ -226,7 +272,7 @@ function love.update(dt)
       if player.vx < -0x01900 then
         player.vx = player.vx + 0x000E4
       else
-
+        --- TODOOOO
       end
     end
 
@@ -239,7 +285,7 @@ function love.update(dt)
     end
   end
 
-  -- Accelerate downward (a la gravity)
+  -- gravity
   player.vy = player.vy + gravity
 
   if player.vy > 0x04000 then
@@ -283,8 +329,8 @@ function love.update(dt)
   end
 
   -- Keep the player in bounds
-  if player.x < player.screenScroll then
-    player.x = player.screenScroll
+  if player.x < player.screenScrollX then
+    player.x = player.screenScrollX
   end
   --[[elseif player.x > GAME_WIDTH - player.width then
     player.x = GAME_WIDTH - player.width
@@ -306,11 +352,23 @@ function love.draw()
   local screenWidth = love.graphics.getWidth()
   local screenHeight = love.graphics.getHeight()
 
-  if player.x > player.screenScroll + (screenWidth / (RENDER_SCALE * 2.0) - BLOCK_SIZE / 2.0) then
-    player.screenScroll = player.x - (screenWidth / (RENDER_SCALE * 2.0) - BLOCK_SIZE / 2.0)
+  if player.x > player.screenScrollX + (screenWidth / (RENDER_SCALE * 2.0) - BLOCK_SIZE / 2.0) then
+    player.screenScrollX = player.x - (screenWidth / (RENDER_SCALE * 2.0) - BLOCK_SIZE / 2.0)
   end
 
-  love.graphics.translate(-player.screenScroll, 0)
+  if player.x < player.screenScrollX + (0.3 * screenWidth / RENDER_SCALE - BLOCK_SIZE / 2.0) then
+    player.screenScrollX = player.x - (0.3 * screenWidth / RENDER_SCALE - BLOCK_SIZE / 2.0)
+  end
+
+  if player.screenScrollX < 0 then
+    player.screenScrollX = 0
+  end
+
+  if player.y > player.screenScrollY + (0.7 * screenHeight / RENDER_SCALE) then
+    player.screenScrollY = player.y - (0.7 * screenHeight / RENDER_SCALE)
+  end
+
+  love.graphics.translate(-player.screenScrollX, -player.screenScrollY)
 
 
 
