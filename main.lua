@@ -1,11 +1,14 @@
+-- https://web.archive.org/web/20130807122227/http://i276.photobucket.com/albums/kk21/jdaster64/smb_playerphysics.png
+
 -- Render constants
 local RENDER_SCALE = 2.0
+local lastCollisionSoundTime = 0.0
 
 -- Game constants
 local LEVEL_DATA = {}
 for i=0,64 do
   table.insert(LEVEL_DATA, {type = 'block', x = i, y = -1, width = 1, height = 1})
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = -0, width = 1, height = 1})
+  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 0, width = 1, height = 1})
 end
 
 table.insert(LEVEL_DATA, {type = 'block', x = 16, y = 4, width = 1, height = 1}) -- question
@@ -15,6 +18,8 @@ table.insert(LEVEL_DATA, {type = 'block', x = 21, y = 4, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 4, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 23, y = 4, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 24, y = 4, width = 1, height = 1})
+
+table.insert(LEVEL_DATA, {type = 'mushroom', x = 23, y = 1})
 
 table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 8, width = 1, height = 1}) -- question
 
@@ -81,6 +86,7 @@ local SKID_TURNAROUND_SPEED = 0x00900
 local player
 local platforms
 local gems
+local enemies
 
 -- Assets
 local playerImage
@@ -94,6 +100,7 @@ function resetGame()
   -- Create platforms and game objects from the level data
   platforms = {}
   gems = {}
+  enemies = {}
 
   -- Create the player
   player = {
@@ -117,13 +124,31 @@ function resetGame()
   for _, obj in ipairs(LEVEL_DATA) do
     if obj.type == 'block' then
       table.insert(platforms, {
-        x = obj.x * BLOCK_SIZE,
-        y = (16 - obj.y) * BLOCK_SIZE,
+        x = gridXToWorldX(obj.x),
+        y = gridYToWorldY(obj.y),
         width = obj.width * BLOCK_SIZE,
         height = obj.height * BLOCK_SIZE
       })
+    elseif obj.type == 'mushroom' then
+      table.insert(enemies, {
+        x = gridXToWorldX(obj.x),
+        y = gridYToWorldY(obj.y),
+        width = BLOCK_SIZE,
+        height = BLOCK_SIZE,
+        type = 'mushroom',
+        vx = -1,
+        isActive = true
+      })
     end
   end
+end
+
+function gridXToWorldX(x)
+  return x * BLOCK_SIZE
+end
+
+function gridYToWorldY(y)
+  return (16 - y) * BLOCK_SIZE
 end
 
 -- Initializes the game
@@ -268,11 +293,22 @@ function love.update(dt)
       end
     end
 
+    -- these values didn't feel big enough so doubled them
     if moveX > 0 and player.vx <= 0 then
       if player.vx < -0x01900 then
-        player.vx = player.vx + 0x000E4
+        player.vx = player.vx + 0x000E4 * 2
       else
         --- TODOOOO
+        player.vx = player.vx + 0x000D0 * 2
+      end
+    end
+
+    if moveX < 0 and player.vx >= 0 then
+      if player.vx > 0x01900 then
+        player.vx = player.vx - 0x000E4 * 2
+      else
+        --- TODOOOO
+        player.vx = player.vx - 0x000D0 * 2
       end
     end
 
@@ -309,14 +345,14 @@ function love.update(dt)
       player.vy = math.min(0, player.vy)
       player.isGrounded = true
       if not wasGrounded then
-        love.audio.play(landSound:clone())
+        collisionSound()
       end
     elseif collisionDir == 'left' then
       player.x = platform.x + platform.width
-      --player.vx = math.max(0, player.vx)
+      player.vx = math.max(-MINIMUM_WALK_VELOCITY * 10, player.vx)
     elseif collisionDir == 'right' then
       player.x = platform.x - player.width
-      --player.vx = math.min(0, player.vx)
+      player.vx = math.min(MINIMUM_WALK_VELOCITY * 10, player.vx)
     end
   end
 
@@ -325,6 +361,20 @@ function love.update(dt)
     if not gem.isCollected and entitiesOverlapping(player, gem) then
       gem.isCollected = true
       love.audio.play(gemSound:clone())
+    end
+  end
+
+  -- enemies
+  for _, enemy in ipairs(enemies) do
+    if enemy.isActive then
+      local collisionDir = checkForCollision(player, enemy)
+      if collisionDir then
+        print(collisionDir)
+      end
+      if collisionDir == 'bottom' then
+        enemy.isActive = false
+        print('doausdof')
+      end
     end
   end
 
@@ -340,13 +390,20 @@ function love.update(dt)
   end
 end
 
+function collisionSound()
+  if player.elapsedTime - lastCollisionSoundTime > 0.1 then
+    love.audio.play(landSound:clone())
+    lastCollisionSoundTime = player.elapsedTime
+  end
+end
+
 -- Renders the game
 function love.draw()
   -- Scale and crop the screen
   --love.graphics.setScissor(0, 0, RENDER_SCALE * GAME_WIDTH, RENDER_SCALE * GAME_HEIGHT)
 
   love.graphics.scale(RENDER_SCALE, RENDER_SCALE)
-  love.graphics.clear(251 / 255, 134 / 255, 199 / 255)
+  love.graphics.clear(117 / 255, 218 / 255, 255 / 255)
   love.graphics.setColor(1, 1, 1, 1)
 
   local screenWidth = love.graphics.getWidth()
@@ -396,6 +453,14 @@ function love.draw()
       drawSprite(objectsImage, 16, 16, 2, gem.x, gem.y)
     end
   end
+
+  love.graphics.setColor(195 / 255, 124 / 255, 77 / 255, 1.0)
+  for _, enemy in ipairs(enemies) do
+    if enemy.isActive then
+      drawSprite(playerImage, 16, 16, 1, enemy.x, enemy.y)
+    end
+  end
+  love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
 
   -- Draw the player
   local sprite
