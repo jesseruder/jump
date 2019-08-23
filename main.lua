@@ -1,69 +1,11 @@
 -- https://web.archive.org/web/20130807122227/http://i276.photobucket.com/albums/kk21/jdaster64/smb_playerphysics.png
 
+require "levels"
+
 -- Render constants
 local RENDER_SCALE = 2.0
-local lastCollisionSoundTime = 0.0
 
 -- Game constants
-local LEVEL_DATA = {}
-for i=0,64 do
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = -1, width = 1, height = 1})
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 0, width = 1, height = 1})
-end
-
-table.insert(LEVEL_DATA, {type = 'block', x = 16, y = 4, width = 1, height = 1}) -- question
-
-table.insert(LEVEL_DATA, {type = 'block', x = 20, y = 4, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 21, y = 4, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 4, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 23, y = 4, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 24, y = 4, width = 1, height = 1})
-
-table.insert(LEVEL_DATA, {type = 'mushroom', x = 23, y = 5})
-
-table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 8, width = 1, height = 1}) -- question
-
--- pipe
-table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 1, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 2, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 1, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 2, width = 1, height = 1})
-
-table.insert(LEVEL_DATA, {type = 'mushroom', x = 31, y = 1})
-
--- pipe
-table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 1, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 2, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 3, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 1, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 2, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 38, y = 3, width = 1, height = 1})
-
--- pipe
-table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 1, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 2, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 3, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 44, y = 4, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 1, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 2, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 3, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 45, y = 4, width = 1, height = 1})
-
--- pipe
-table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 1, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 2, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 3, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 54, y = 4, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 1, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 2, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 3, width = 1, height = 1})
-table.insert(LEVEL_DATA, {type = 'block', x = 55, y = 4, width = 1, height = 1})
-
-for i=67,200 do
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = -1, width = 1, height = 1})
-  table.insert(LEVEL_DATA, {type = 'block', x = i, y = 0, width = 1, height = 1})
-end
-
 local BLOCK_SIZE = 16
 local ORIGINAL_FPS = 60
 
@@ -88,8 +30,11 @@ local ENEMY_STOMP_SPEED = -0x06000
 -- Game variables
 local player
 local platforms
+local goal
 local gems
 local enemies
+local lastCollisionSoundTime = 0.0
+local level = 1
 
 -- Assets
 local playerImage
@@ -124,7 +69,8 @@ function resetGame()
     screenScrollY = 0,
   }
 
-  for _, obj in ipairs(LEVEL_DATA) do
+  local levelData = getLevelData(level)
+  for _, obj in ipairs(levelData) do
     if obj.type == 'block' then
       table.insert(platforms, {
         x = gridXToWorldX(obj.x),
@@ -142,6 +88,13 @@ function resetGame()
         vx = 0x00800,
         isActive = true
       })
+    elseif obj.type == 'goal' then
+      goal = {
+        x = gridXToWorldX(obj.x),
+        y = gridYToWorldY(obj.y),
+        width = obj.width * BLOCK_SIZE,
+        height = obj.height * BLOCK_SIZE
+      }
     end
   end
 end
@@ -351,11 +304,11 @@ function love.update(dt)
         collisionSound()
       end
     elseif collisionDir == 'left' then
-      print('left')
+      --print('left')
       player.x = platform.x + platform.width
       player.vx = math.max(-MINIMUM_WALK_VELOCITY * 10, player.vx)
     elseif collisionDir == 'right' then
-      print('right')
+      --print('right')
       player.x = platform.x - player.width
       player.vx = math.min(MINIMUM_WALK_VELOCITY * 10, player.vx)
     end
@@ -367,6 +320,12 @@ function love.update(dt)
       gem.isCollected = true
       love.audio.play(gemSound:clone())
     end
+  end
+
+  -- Goal
+  if entitiesOverlapping(player, goal) then
+    level = level + 1
+    resetGame()
   end
 
   -- enemies
@@ -497,6 +456,11 @@ function love.draw()
   for _, platform in ipairs(platforms) do
     drawSprite(objectsImage, 16, 16, 3, platform.x, platform.y)
   end
+
+  drawSprite(objectsImage, BLOCK_SIZE, BLOCK_SIZE, 1, goal.x, goal.y)
+  drawSprite(objectsImage, BLOCK_SIZE, BLOCK_SIZE, 1, goal.x + BLOCK_SIZE, goal.y)
+  drawSprite(objectsImage, BLOCK_SIZE, BLOCK_SIZE, 1, goal.x, goal.y + BLOCK_SIZE)
+  drawSprite(objectsImage, BLOCK_SIZE, BLOCK_SIZE, 1, goal.x + BLOCK_SIZE, goal.y + BLOCK_SIZE)
 
   -- Draw the gems
   for _, gem in ipairs(gems) do
