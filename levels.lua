@@ -148,8 +148,8 @@ function getLevelData(level)
         blockOfBlocks(LEVEL_DATA, 15, 5, 2, 1)
 
         -- hard way
-        blockOfBlocks(LEVEL_DATA, 7, 6, 1, 1)
-        table.insert(LEVEL_DATA, {type = 'gem', x = 7, y = 7})
+        blockOfBlocks(LEVEL_DATA, 6, 6, 1, 1)
+        table.insert(LEVEL_DATA, {type = 'gem', x = 6, y = 7})
 
         blockOfBlocks(LEVEL_DATA, 2, 9, 1, 1)
         table.insert(LEVEL_DATA, {type = 'gem', x = 2, y = 10})
@@ -157,8 +157,8 @@ function getLevelData(level)
         blockOfBlocks(LEVEL_DATA, 2, 12, 1, 1)
         table.insert(LEVEL_DATA, {type = 'gem', x = 2, y = 13})
 
-        blockOfBlocks(LEVEL_DATA, 7, 15, 1, 1)
-        table.insert(LEVEL_DATA, {type = 'gem', x = 7, y = 16})
+        blockOfBlocks(LEVEL_DATA, 10, 14, 1, 1)
+        table.insert(LEVEL_DATA, {type = 'gem', x = 10, y = 15})
 
         blockOfBlocks(LEVEL_DATA, 16, 16, 3, 1)
         rowOfGems(LEVEL_DATA, 16, 17, 3)
