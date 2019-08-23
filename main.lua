@@ -34,7 +34,8 @@ local goal
 local gems
 local enemies
 local lastCollisionSoundTime = 0.0
-local level = 1
+local level = 2
+local score = 0
 
 -- Assets
 local playerImage
@@ -43,6 +44,14 @@ local walkSounds
 local jumpSound
 local landSound
 local gemSound
+
+function die()
+  score = score - 5
+  if score < 0 then
+    score = 0
+  end
+  resetGame()
+end
 
 function resetGame()
   -- Create platforms and game objects from the level data
@@ -78,8 +87,8 @@ function resetGame()
       table.insert(platforms, {
         x = gridXToWorldX(obj.x),
         y = gridYToWorldY(obj.y),
-        width = obj.width * BLOCK_SIZE,
-        height = obj.height * BLOCK_SIZE
+        width = BLOCK_SIZE,
+        height = BLOCK_SIZE
       })
     elseif obj.type == 'mushroom' then
       table.insert(enemies, {
@@ -88,7 +97,7 @@ function resetGame()
         width = BLOCK_SIZE,
         height = BLOCK_SIZE,
         type = 'mushroom',
-        vx = 0x00800,
+        vx = 0x00800 * (obj.initialDirection or 1),
         isActive = true
       })
     elseif obj.type == 'goal' then
@@ -98,6 +107,14 @@ function resetGame()
         width = obj.width * BLOCK_SIZE,
         height = obj.height * BLOCK_SIZE
       }
+    elseif obj.type == 'gem' then
+      table.insert(gems, {
+        x = gridXToWorldX(obj.x),
+        y = gridYToWorldY(obj.y),
+        width = BLOCK_SIZE,
+        height = BLOCK_SIZE,
+        isCollected = false
+      })
     end
   end
 end
@@ -333,6 +350,7 @@ function love.update(dt)
     if not gem.isCollected and entitiesOverlapping(player, gem) then
       gem.isCollected = true
       love.audio.play(gemSound:clone())
+      score = score + 1
     end
   end
 
@@ -358,7 +376,7 @@ function love.update(dt)
         -- online hit one enemy at a time
         break
       elseif collisionDir ~= nil then
-        resetGame()
+        die()
         return
       end
 
@@ -409,7 +427,7 @@ function love.update(dt)
     player.x = GAME_WIDTH - player.width
   end]]--
   if player.y > love.graphics.getHeight() / RENDER_SCALE + 50 then
-    resetGame()
+    die()
     return
   end
 end
@@ -525,7 +543,7 @@ function love.draw()
   love.graphics.pop()
   love.graphics.setFont(BigFont)
   love.graphics.setColor(1, 1, 1, 1)
-  love.graphics.print("Level " .. level, 20, 20)
+  love.graphics.print("Level " .. level .. "    Score " .. score, 20, 20)
   --renderButtons()
 end
 
