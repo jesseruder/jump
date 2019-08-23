@@ -19,7 +19,7 @@ table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 4, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 23, y = 4, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 24, y = 4, width = 1, height = 1})
 
-table.insert(LEVEL_DATA, {type = 'mushroom', x = 23, y = 1})
+table.insert(LEVEL_DATA, {type = 'mushroom', x = 23, y = 5})
 
 table.insert(LEVEL_DATA, {type = 'block', x = 22, y = 8, width = 1, height = 1}) -- question
 
@@ -28,6 +28,8 @@ table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 1, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 28, y = 2, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 1, width = 1, height = 1})
 table.insert(LEVEL_DATA, {type = 'block', x = 29, y = 2, width = 1, height = 1})
+
+table.insert(LEVEL_DATA, {type = 'mushroom', x = 31, y = 1})
 
 -- pipe
 table.insert(LEVEL_DATA, {type = 'block', x = 37, y = 1, width = 1, height = 1})
@@ -81,6 +83,7 @@ local RELEASE_DECELERATION = 0x000D0
 local MAXIMUM_RUN_VELOCITY = 0x02900
 local SKID_DECELERATION = 0x001A0
 local SKID_TURNAROUND_SPEED = 0x00900
+local ENEMY_STOMP_SPEED = -0x06000
 
 -- Game variables
 local player
@@ -136,7 +139,7 @@ function resetGame()
         width = BLOCK_SIZE,
         height = BLOCK_SIZE,
         type = 'mushroom',
-        vx = -1,
+        vx = 0x00800,
         isActive = true
       })
     end
@@ -339,7 +342,7 @@ function love.update(dt)
     local collisionDir = checkForCollision(player, platform)
     if collisionDir == 'top' then
       player.y = platform.y + platform.height
-      player.vy = math.max(0, player.vy)
+      player.vy = 0x01000
     elseif collisionDir == 'bottom' then
       player.y = platform.y - player.height
       player.vy = math.min(0, player.vy)
@@ -369,11 +372,56 @@ function love.update(dt)
     if enemy.isActive then
       local collisionDir = checkForCollision(player, enemy)
       if collisionDir then
-        print(collisionDir)
+        -- testing
+        -- print(collisionDir)
       end
+
       if collisionDir == 'bottom' then
         enemy.isActive = false
-        print('doausdof')
+        player.vy = ENEMY_STOMP_SPEED
+
+        -- online hit one enemy at a time
+        break
+      elseif collisionDir ~= nil then
+        resetGame()
+        return
+      end
+
+      enemy.x = enemy.x + TO_WORLD_UNITS(enemy.vx)
+
+      local hasRightCollision = false
+      local hasLeftCollision = false
+      for _, platform in ipairs(platforms) do
+        local collisionDir = checkForCollision(enemy, platform)
+        if collisionDir == 'left' then
+          enemy.vx = math.abs(enemy.vx)
+        elseif collisionDir == 'right' then
+          enemy.vx = -math.abs(enemy.vx)
+        end
+
+        enemy.x = enemy.x + BLOCK_SIZE
+        enemy.y = enemy.y + 10
+        local rightCollision = checkForCollision(enemy, platform)
+        if rightCollision ~= nil then
+          hasRightCollision = true
+        end
+
+        enemy.x = enemy.x - BLOCK_SIZE * 2
+        local leftCollision = checkForCollision(enemy, platform)
+        if leftCollision ~= nil then
+          hasLeftCollision = true
+        end
+
+        enemy.x = enemy.x + BLOCK_SIZE
+        enemy.y = enemy.y - 10
+      end
+
+      if hasLeftCollision == false then
+        enemy.vx = math.abs(enemy.vx)
+      end
+
+      if hasRightCollision == false then
+        enemy.vx = -math.abs(enemy.vx)
       end
     end
   end
@@ -386,7 +434,8 @@ function love.update(dt)
     player.x = GAME_WIDTH - player.width
   end]]--
   if player.y > love.graphics.getHeight() / RENDER_SCALE + 50 then
-    player.y = -10
+    resetGame()
+    return
   end
 end
 
@@ -444,7 +493,7 @@ function love.draw()
 
   -- Draw the platforms
   for _, platform in ipairs(platforms) do
-    drawSprite(objectsImage, 16, 16, 1, platform.x, platform.y)
+    drawSprite(objectsImage, 16, 16, 3, platform.x, platform.y)
   end
 
   -- Draw the gems
