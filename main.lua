@@ -122,6 +122,8 @@ function love.load()
   landSound = love.audio.newSource('sfx/land.wav', 'static')
   gemSound = love.audio.newSource('sfx/gem.wav', 'static')
 
+  BigFont = love.graphics.newFont(20)
+
   resetGame()
 end
 
@@ -412,6 +414,7 @@ function love.draw()
   -- Scale and crop the screen
   --love.graphics.setScissor(0, 0, RENDER_SCALE * GAME_WIDTH, RENDER_SCALE * GAME_HEIGHT)
 
+  love.graphics.push()
   love.graphics.scale(RENDER_SCALE, RENDER_SCALE)
   love.graphics.clear(117 / 255, 218 / 255, 255 / 255)
   love.graphics.setColor(1, 1, 1, 1)
@@ -489,6 +492,10 @@ function love.draw()
   end
   drawSprite(playerImage, 16, 16, sprite, player.x, player.y, player.isFacingLeft)
 
+  love.graphics.pop()
+  love.graphics.setFont(BigFont)
+  love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.print("Level " .. level, 20, 20)
   --renderButtons()
 end
 
