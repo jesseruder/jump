@@ -107,6 +107,10 @@ function getLevelData(level)
 
         blockOfBlocks(LEVEL_DATA, 52, 13, 3, 1)
         rowOfGems(LEVEL_DATA, 52, 14, 3)
+        blockOfBlocks(LEVEL_DATA, 52, 16, 3, 1)
+        rowOfGems(LEVEL_DATA, 52, 17, 3)
+        blockOfBlocks(LEVEL_DATA, 52, 19, 3, 1)
+        rowOfGems(LEVEL_DATA, 52, 20, 3)
 
         blockOfBlocks(LEVEL_DATA, 67, 9, 6, 1)
 

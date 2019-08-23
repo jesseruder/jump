@@ -34,7 +34,7 @@ local goal
 local gems
 local enemies
 local lastCollisionSoundTime = 0.0
-local level = 2
+local level = 1
 local score = 0
 
 -- Assets
