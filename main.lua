@@ -56,6 +56,9 @@ function resetGame()
     y = BLOCK_SIZE * 15,
     vx = 0,
     vy = 0,
+    lastDirection = 1,
+    landingTimer = 0,
+    walkTimer = 0,
     holdingAGravity = 0x00280,
     fallingGravity = 0x00280,
     elapsedTime = 0,
@@ -161,6 +164,7 @@ end
 -- Updates the game state
 function love.update(dt)
   player.elapsedTime = player.elapsedTime + dt
+  player.landingTimer = player.landingTimer - dt
 
   if love.keyboard.isDown('lshift') or love.keyboard.isDown('rshift') then
     player.runUntilTime = player.elapsedTime + 10 / ORIGINAL_FPS
@@ -289,6 +293,13 @@ function love.update(dt)
   -- Apply the player's velocity to her position
   player.x = player.x + TO_WORLD_UNITS(player.vx)
   player.y = player.y + TO_WORLD_UNITS(player.vy)
+  player.walkTimer = player.walkTimer + math.abs(TO_WORLD_UNITS(player.vx))
+
+  if player.vx > 0 then
+    player.lastDirection = 1
+  elseif player.vx < 0 then
+    player.lastDirection = -1
+  end
 
   -- Check for collisions with platforms
   local wasGrounded = player.isGrounded
@@ -303,6 +314,7 @@ function love.update(dt)
       player.vy = math.min(0, player.vy)
       player.isGrounded = true
       if not wasGrounded then
+        player.landingTimer = 0.1
         collisionSound()
       end
     elseif collisionDir == 'left' then
@@ -475,7 +487,7 @@ function love.draw()
   love.graphics.setColor(195 / 255, 124 / 255, 77 / 255, 1.0)
   for _, enemy in ipairs(enemies) do
     if enemy.isActive then
-      drawSprite(playerImage, 16, 16, 1, enemy.x, enemy.y)
+      drawSprite(playerImage, 16, 16, 1 + 7 * 4, enemy.x, enemy.y, enemy.vx < 0)
     end
   end
   love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
@@ -483,14 +495,32 @@ function love.draw()
   -- Draw the player
   local sprite
   if player.isGrounded then
-    sprite = 1
+    -- When standing
+    local walkTimer = (player.walkTimer / 50.0) % 0.6
+
+    if player.vx == 0 then
+      if player.landingTimer > 0.00 then
+        sprite = 7
+      else
+        sprite = 1
+      end
+    -- When running
+    elseif walkTimer < 0.2 then
+      sprite = 2
+    elseif walkTimer < 0.3 then
+      sprite = 3
+    elseif walkTimer < 0.5 then
+      sprite = 4
+    else
+      sprite = 3
+    end
   -- When jumping
   elseif player.vy > 0 then
     sprite = 6
   else
     sprite = 5
   end
-  drawSprite(playerImage, 16, 16, sprite, player.x, player.y, player.isFacingLeft)
+  drawSprite(playerImage, 16, 16, sprite + 14, player.x, player.y, player.lastDirection == -1)
 
   love.graphics.pop()
   love.graphics.setFont(BigFont)
