@@ -107,8 +107,8 @@ function resetGame()
 
   -- Create the player
   player = {
-    x = 1,
-    y = 1,
+    x = BLOCK_SIZE,
+    y = BLOCK_SIZE * 15,
     vx = 0,
     vy = 0,
     holdingAGravity = 0x00280,
@@ -351,9 +351,11 @@ function love.update(dt)
         collisionSound()
       end
     elseif collisionDir == 'left' then
+      print('left')
       player.x = platform.x + platform.width
       player.vx = math.max(-MINIMUM_WALK_VELOCITY * 10, player.vx)
     elseif collisionDir == 'right' then
+      print('right')
       player.x = platform.x - player.width
       player.vx = math.min(MINIMUM_WALK_VELOCITY * 10, player.vx)
     end
@@ -552,7 +554,7 @@ end
 -- Checks to see if two entities are colliding, and if so from which side. This is
 -- accomplished by checking the four quadrants of the axis-aligned bounding boxes
 function checkForCollision(a, b)
-  local indent = 3
+  local indent = 5
   if rectsOverlapping(a.x + indent, a.y + a.height / 2, a.width - 2 * indent, a.height / 2, b.x, b.y, b.width, b.height) then
     return 'bottom'
   elseif rectsOverlapping(a.x + indent, a.y, a.width - 2 * indent, a.height / 2, b.x, b.y, b.width, b.height) then
