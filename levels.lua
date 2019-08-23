@@ -6,6 +6,14 @@ function blockOfBlocks(leveldata, x, y, width, height)
     end
 end
 
+function blockOfMovingBlocks(leveldata, x, y, width, height, offsetX, offsetY, cycleTime)
+    for xx=x,x+width-1 do
+        for yy=y-height+1,y do
+            table.insert(leveldata, {type = 'movingblock', x = xx, y = yy, offsetX = offsetX, offsetY = offsetY, cycleTime = cycleTime})
+        end
+    end
+end
+
 function rowOfGems(leveldata, x, y, width)
     for xx=x,x+width-1 do
         table.insert(leveldata, {type = 'gem', x = xx, y = y})
@@ -116,6 +124,48 @@ function getLevelData(level)
 
         -- goal
         table.insert(LEVEL_DATA, {type = 'goal', x = 71, y = 11, width = 2, height = 2})
+    elseif level == 3 then
+        blockOfBlocks(LEVEL_DATA, 0, 0, 10, 2)
+        blockOfMovingBlocks(LEVEL_DATA, 12, 0, 10, 2, 0, 5, 5)
+        --table.insert(LEVEL_DATA, {type = 'mushroom', x = 15, y = 1})
+        blockOfMovingBlocks(LEVEL_DATA, 5, 8, 5, 2, 0, -5, 5)
+        --table.insert(LEVEL_DATA, {type = 'mushroom', x = 7, y = 9})
+
+        blockOfBlocks(LEVEL_DATA, 5, 11, 5, 1)
+        rowOfGems(LEVEL_DATA, 5, 12, 4)
+        blockOfBlocks(LEVEL_DATA, 9, 16, 1, 5)
+
+        blockOfMovingBlocks(LEVEL_DATA, 13, 10, 5, 2, 3, 4, 5)
+
+        blockOfBlocks(LEVEL_DATA, 22, 14, 10, 1)
+
+        -- goal
+        table.insert(LEVEL_DATA, {type = 'goal', x = 30, y = 16, width = 2, height = 2})
+    elseif level == 4 then
+        blockOfBlocks(LEVEL_DATA, 0, 0, 10, 2)
+
+        blockOfBlocks(LEVEL_DATA, 12, 3, 2, 1)
+        blockOfBlocks(LEVEL_DATA, 15, 5, 2, 1)
+
+        -- hard way
+        blockOfBlocks(LEVEL_DATA, 7, 6, 1, 1)
+        table.insert(LEVEL_DATA, {type = 'gem', x = 7, y = 7})
+
+        blockOfBlocks(LEVEL_DATA, 2, 9, 1, 1)
+        table.insert(LEVEL_DATA, {type = 'gem', x = 2, y = 10})
+
+        blockOfBlocks(LEVEL_DATA, 2, 12, 1, 1)
+        table.insert(LEVEL_DATA, {type = 'gem', x = 2, y = 13})
+
+        blockOfBlocks(LEVEL_DATA, 7, 15, 1, 1)
+        table.insert(LEVEL_DATA, {type = 'gem', x = 7, y = 16})
+
+        blockOfBlocks(LEVEL_DATA, 16, 16, 3, 1)
+        rowOfGems(LEVEL_DATA, 16, 17, 3)
+
+
+        -- goal
+        table.insert(LEVEL_DATA, {type = 'goal', x = 27, y = 16, width = 2, height = 2})
     else
         for i=0,64 do
             table.insert(LEVEL_DATA, {type = 'block', x = i, y = -1, width = 1, height = 1})

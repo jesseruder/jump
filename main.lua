@@ -61,7 +61,7 @@ function resetGame()
 
   -- Create the player
   player = {
-    x = BLOCK_SIZE,
+    x = BLOCK_SIZE * 1,
     y = BLOCK_SIZE * 15,
     vx = 0,
     vy = 0,
@@ -88,7 +88,21 @@ function resetGame()
         x = gridXToWorldX(obj.x),
         y = gridYToWorldY(obj.y),
         width = BLOCK_SIZE,
-        height = BLOCK_SIZE
+        height = BLOCK_SIZE,
+      })
+    elseif obj.type == 'movingblock' then
+      table.insert(platforms, {
+        x = gridXToWorldX(obj.x),
+        y = gridYToWorldY(obj.y),
+        width = BLOCK_SIZE,
+        height = BLOCK_SIZE,
+
+        originalX = gridXToWorldX(obj.x),
+        originalY = gridYToWorldY(obj.y),
+        offsetX = BLOCK_SIZE * obj.offsetX,
+        offsetY = -BLOCK_SIZE * obj.offsetY,
+        cycleTime = obj.cycleTime,
+        cycleOffset = obj.cycleOffset or 0
       })
     elseif obj.type == 'mushroom' then
       table.insert(enemies, {
@@ -98,6 +112,7 @@ function resetGame()
         height = BLOCK_SIZE,
         type = 'mushroom',
         vx = 0x00800 * (obj.initialDirection or 1),
+        vy = 0,
         isActive = true
       })
     elseif obj.type == 'goal' then
@@ -322,6 +337,20 @@ function love.update(dt)
   local wasGrounded = player.isGrounded
   player.isGrounded = false
   for _, platform in ipairs(platforms) do
+    if platform.cycleTime then
+      local elapsedTime = player.elapsedTime + platform.cycleOffset
+      local cyclePercent = (elapsedTime % platform.cycleTime) / platform.cycleTime
+      local percentToOffset = 0
+      if cyclePercent < 0.5 then
+        percentToOffset = cyclePercent
+      else
+        percentToOffset = 1.0 - cyclePercent
+      end
+
+      platform.x = platform.originalX + percentToOffset * platform.offsetX
+      platform.y = platform.originalY + percentToOffset * platform.offsetY
+    end
+
     local collisionDir = checkForCollision(player, platform)
     if collisionDir == 'top' then
       player.y = platform.y + platform.height
@@ -380,7 +409,14 @@ function love.update(dt)
         return
       end
 
+      enemy.vy = enemy.vy + 0x00280
+
+      if enemy.vy > 0x04000 then
+        enemy.vy = 0x04000
+      end
+
       enemy.x = enemy.x + TO_WORLD_UNITS(enemy.vx)
+      enemy.y = enemy.y + TO_WORLD_UNITS(enemy.vy)
 
       local hasRightCollision = false
       local hasLeftCollision = false
@@ -390,6 +426,9 @@ function love.update(dt)
           enemy.vx = math.abs(enemy.vx)
         elseif collisionDir == 'right' then
           enemy.vx = -math.abs(enemy.vx)
+        elseif collisionDir == 'bottom' then
+          enemy.y = platform.y - enemy.height
+          enemy.vy = math.min(0, enemy.vy)
         end
 
         enemy.x = enemy.x + BLOCK_SIZE
