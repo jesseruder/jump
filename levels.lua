@@ -127,9 +127,9 @@ function getLevelData(level)
     elseif level == 3 then
         blockOfBlocks(LEVEL_DATA, 0, 0, 10, 2)
         blockOfMovingBlocks(LEVEL_DATA, 12, 0, 10, 2, 0, 5, 5)
-        --table.insert(LEVEL_DATA, {type = 'mushroom', x = 15, y = 1})
+        table.insert(LEVEL_DATA, {type = 'mushroom', x = 15, y = 1})
         blockOfMovingBlocks(LEVEL_DATA, 5, 8, 5, 2, 0, -5, 5)
-        --table.insert(LEVEL_DATA, {type = 'mushroom', x = 7, y = 9})
+        table.insert(LEVEL_DATA, {type = 'mushroom', x = 7, y = 9})
 
         blockOfBlocks(LEVEL_DATA, 5, 11, 5, 1)
         rowOfGems(LEVEL_DATA, 5, 12, 4)
@@ -144,8 +144,15 @@ function getLevelData(level)
     elseif level == 4 then
         blockOfBlocks(LEVEL_DATA, 0, 0, 10, 2)
 
+        -- easy way
         blockOfBlocks(LEVEL_DATA, 12, 3, 2, 1)
         blockOfBlocks(LEVEL_DATA, 15, 5, 2, 1)
+
+        blockOfBlocks(LEVEL_DATA, 15, 8, 1, 1)
+        blockOfBlocks(LEVEL_DATA, 18, 9, 2, 1)
+        table.insert(LEVEL_DATA, {type = 'mushroom', x = 18, y = 10})
+
+        blockOfBlocks(LEVEL_DATA, 23, 10, 4, 1)
 
         -- hard way
         blockOfBlocks(LEVEL_DATA, 6, 6, 1, 1)
