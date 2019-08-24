@@ -193,8 +193,19 @@ function love.keypressed(key, scancode, isrepeat)
   end
 end
 
+
+local accumulator = 0.0
+local FPS = 60
+
 -- Updates the game state
 function love.update(dt)
+
+  accumulator = accumulator + dt
+  if accumulator < 1.0 / FPS then
+    return
+  end
+  accumulator = accumulator - 1.0 / FPS
+
   player.elapsedTime = player.elapsedTime + dt
   player.landingTimer = player.landingTimer - dt
 
